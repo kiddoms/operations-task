@@ -1,0 +1,31 @@
+services:
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    working_dir: /usr/src/db
+    volumes:
+      - ./db/rates.sql:/docker-entrypoint-initdb.d/rates.sql
+    healthcheck:
+      test: pg_isready -U postgres
+
+  app-server:
+    image: backend-image:latest
+    command: gunicorn -b :3000 wsgi
+    ports:
+      - 3000:3000
+    environment:
+      DB_USER: ${DB_USER}
+      DB_HOST: ${DB_HOST}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    working_dir: /usr/src/app
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: on-failure
+    volumes:
+      - ./rates:/usr/src/app
+
+
+
