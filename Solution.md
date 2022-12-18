@@ -41,3 +41,48 @@ Please make sure all the commands are run from the root of the repository.
 
 > docker compose down
 
+## Case: Data ingestion pipeline
+
+### Architecture Diagram
+
+<img alt="Architecture Diagram" src="static/CaseArchitecture.png"/>
+
+### Architecture Description
+
+1. Since the nature of traffic is sporadic I have made the system server less & event driven.
+2. Since the amount of data is huge I have made the system asynchronous by using messaging queues(AWS SQS).
+3. Since the system uses AWS managed services, availability & scalability are taken care of by AWS.
+4. I have used a relational database(AWS RDS or any other) to maintain atomicity of updates.
+5. AWS Glue has a python shell job functionality which does not have a time limit of 15 minutes like AWS Lambda which helps in running queries over database which might take a longer time.
+
+#### Assumption
+1. For the updates I have assumed since the data might be thousands of items, the Glue job might have to connect to an external service to get the data.
+
+#### Request flow - Updates
+1. The flow gets triggered by a message posted to the AWS SQS containing a request ID and details about the task. This message can be via an API call or directly by the consumer or some other system.
+2. The SQS triggers a lambda function which creates a tracking document with the request ID, marks it pending, adds the task details & triggers the AWS Glue job.
+3. The Glue job will read the tracking document based on request ID, mark it in progress & start the execution of the query on the Database.
+4. Once the query completes(FAILS or SUCCEEDS), the glue job would mark the status of the document accordingly & add the error in the document if required. Then it would post a message(along with data retrieved in the case of read requests and error message if required) to the response SQS queue to be read by the consumer.
+
+#### Monitoring
+1. The tracking document serves the purpose of passing data between the Lambda & Glue job. But it can also be used for monitoring purposes.
+2. Within the tracking document we can add statistical details of run times, data size(for read jobs), memory consumption, log location, etc.
+3. This way the monitoring built over this would be able to show all those data through the dashboard / UI.
+4. One added advantage of Elasticsearch is text based searching & pushing down aggregations & calculations to ES.
+
+#### Bottle Necks
+1. The resource allocation to the glue job being insufficient resulting in making the queries slower.
+2. Specifically for read requests if the size of data starts exceeding the size of messages allowed in SQS that would cause the system to fail.
+3. Another potential bottleneck as the traffic grows could be breaching maximum concurrent runs limit especially for AWS Glue(as it runs for longer times).
+
+#### Potential Solutions/Workarounds
+1. The first two problems can be identified via the tracking documents & logs.
+2. The DPU allocation for Glue job can be increased.
+3. Instead of posting the data to response SQS we can store it in either Elasticsearch or S3, and pass on the information on how to read that via the queue.
+4. On request the Glue default quotas (of max concurrent DPUs/Job runs) can be increased, if that does not work we might have to build a custom solution which creates a resource(say EC2) just to run the queries & terminates them once it is done.
+5. The custom solution could be for update queries & Glue could be used for read requests.
+
+### Additional Question
+1. For the staging/development scaled down versions the biggest blocker/problem would be the concurrency limits of lambda/glue executions per account.
+2. To address this we can use different AWS accounts for different environments & use appropriate Infrastructure as Code functionalities to allocate appropriate resources in different accounts.
+
