@@ -71,7 +71,7 @@ Please make sure all the commands are run from the root of the repository.
 4. One added advantage of Elasticsearch is text based searching & pushing down aggregations & calculations to ES.
 
 #### Bottle Necks
-1. The resource allocation to the glue job being insufficient resulting in making the queries slower.
+1. The resource allocation to the glue job being insufficient resulting in making the process inefficient.
 2. Specifically for read requests if the size of data starts exceeding the size of messages allowed in SQS that would cause the system to fail.
 3. Another potential bottleneck as the traffic grows could be breaching maximum concurrent runs limit especially for AWS Glue(as it runs for longer times).
 
