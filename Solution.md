@@ -79,7 +79,7 @@ Please make sure all the commands are run from the root of the repository.
 1. The first two problems can be identified via the tracking documents & logs.
 2. The DPU allocation for Glue job can be increased or we can enable auto scaling for the glue job.
 3. Instead of posting the data to response SQS we can store it in either Elasticsearch or S3, and pass on the information on how to read that via the queue.
-4. On request the Glue default quotas (of max concurrent DPUs/Job runs) can be increased, if that does not work we might have to build a custom solution which creates a resource(say EC2) just to run the queries & terminates them once it is done.
+4. On request the Glue default quotas (of max concurrent DPUs/Job runs) can be increased, if that does not work we might have to build a custom solution which creates a resource(say EC2) just to run the queries and reuse the same during heavy traffic times & terminates them once it is no longer required.
 5. The custom solution could be for update queries & Glue could be used for read requests.
 
 ### Additional Question
