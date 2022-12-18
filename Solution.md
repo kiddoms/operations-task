@@ -58,7 +58,7 @@ Please make sure all the commands are run from the root of the repository.
 #### Assumption
 1. For the updates I have assumed since the data might be thousands of items, the Glue job might have to connect to an external service to get the data.
 
-#### Request flow - Updates
+#### Request flow
 1. The flow gets triggered by a message posted to the AWS SQS containing a request ID and details about the task. This message can be via an API call or directly by the consumer or some other system.
 2. The SQS triggers a lambda function which creates a tracking document with the request ID, marks it pending, adds the task details & triggers the AWS Glue job.
 3. The Glue job will read the tracking document based on request ID, mark it in progress & start the execution of the query on the Database.
