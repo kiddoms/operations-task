@@ -7,7 +7,7 @@ These are my solutions to the cases in the task.
 ### Technologies Used
 1. I am using [**docker-compose**](docker-compose.yml) to set up a multi container development environment. Since this is a development environment we don't need a heavy setup to build & test the environment & code, using docker-compose should suffice.
 2. I am using [**Dockerfile**](Dockerfile) to build an image for the application server. Using the base python3 image & copying the source code related files, I am building an image with name **backend-image** & using that to start up the application server.
-3. I am using the latest postgres docker image from DockerHub as there was none that I could find specifically for postgres version 13.5. The [database dump](db/rates.sql) is automatically copied to the entrypoint of the db container.
+3. I am using the latest postgres docker image from DockerHub. The [database dump](db/rates.sql) is automatically copied to the entrypoint of the db container.
 
 ### Code changes
 1. As required I have changed the way the database configurations are read in [Flask config](rates/config.py). Now these values are read from environment variables.
